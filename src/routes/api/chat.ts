@@ -38,6 +38,31 @@ export const Route = createFileRoute("/api/chat")({
         if (!Array.isArray(messages)) {
           return new Response("Messages are required", { status: 400 });
         }
+
+        // Payload bounds: cap message count and per-part text length to keep
+        // token costs and upstream context usage bounded.
+        const MAX_MESSAGES = 50;
+        const MAX_PART_CHARS = 4000;
+        if (messages.length > MAX_MESSAGES) {
+          return new Response("Too many messages", { status: 413 });
+        }
+        for (const m of messages) {
+          if (!m || !Array.isArray((m as UIMessage).parts)) {
+            return new Response("Invalid message shape", { status: 400 });
+          }
+          for (const part of (m as UIMessage).parts) {
+            if (part && (part as { type?: string }).type === "text") {
+              const text = (part as { text?: unknown }).text;
+              if (typeof text !== "string") {
+                return new Response("Invalid message shape", { status: 400 });
+              }
+              if (text.length > MAX_PART_CHARS) {
+                return new Response("Message too large", { status: 413 });
+              }
+            }
+          }
+        }
+
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
 
