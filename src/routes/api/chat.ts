@@ -17,6 +17,23 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Same-origin gate: block cross-origin callers from burning the
+        // server-side LOVABLE_API_KEY budget. Browsers always send Origin on
+        // POST; non-browser callers (curl, scripts) won't match the host.
+        const origin = request.headers.get("origin");
+        const host = request.headers.get("host");
+        if (!origin || !host) {
+          return new Response("Forbidden", { status: 403 });
+        }
+        try {
+          const originHost = new URL(origin).host;
+          if (originHost !== host) {
+            return new Response("Forbidden", { status: 403 });
+          }
+        } catch {
+          return new Response("Forbidden", { status: 403 });
+        }
+
         const { messages } = (await request.json()) as { messages?: UIMessage[] };
         if (!Array.isArray(messages)) {
           return new Response("Messages are required", { status: 400 });
