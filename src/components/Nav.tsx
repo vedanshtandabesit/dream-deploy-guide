@@ -7,6 +7,7 @@ const links = [
   { to: "/skills", label: "Skills" },
   { to: "/roadmap", label: "Roadmap" },
   { to: "/interview", label: "Interview" },
+  { to: "/assistant", label: "AI Coach" },
 ] as const;
 
 export function Nav() {

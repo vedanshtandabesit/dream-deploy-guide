@@ -14,7 +14,9 @@ import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as InterviewRouteImport } from './routes/interview'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
@@ -41,65 +43,95 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssistantRoute = AssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
   '/dashboard': typeof DashboardRoute
   '/interview': typeof InterviewRoute
   '/roadmap': typeof RoadmapRoute
   '/skills': typeof SkillsRoute
   '/upload': typeof UploadRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
   '/dashboard': typeof DashboardRoute
   '/interview': typeof InterviewRoute
   '/roadmap': typeof RoadmapRoute
   '/skills': typeof SkillsRoute
   '/upload': typeof UploadRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
   '/dashboard': typeof DashboardRoute
   '/interview': typeof InterviewRoute
   '/roadmap': typeof RoadmapRoute
   '/skills': typeof SkillsRoute
   '/upload': typeof UploadRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/assistant'
     | '/dashboard'
     | '/interview'
     | '/roadmap'
     | '/skills'
     | '/upload'
+    | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/interview' | '/roadmap' | '/skills' | '/upload'
+  to:
+    | '/'
+    | '/assistant'
+    | '/dashboard'
+    | '/interview'
+    | '/roadmap'
+    | '/skills'
+    | '/upload'
+    | '/api/chat'
   id:
     | '__root__'
     | '/'
+    | '/assistant'
     | '/dashboard'
     | '/interview'
     | '/roadmap'
     | '/skills'
     | '/upload'
+    | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssistantRoute: typeof AssistantRoute
   DashboardRoute: typeof DashboardRoute
   InterviewRoute: typeof InterviewRoute
   RoadmapRoute: typeof RoadmapRoute
   SkillsRoute: typeof SkillsRoute
   UploadRoute: typeof UploadRoute
+  ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -139,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assistant': {
+      id: '/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -146,27 +185,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssistantRoute: AssistantRoute,
   DashboardRoute: DashboardRoute,
   InterviewRoute: InterviewRoute,
   RoadmapRoute: RoadmapRoute,
   SkillsRoute: SkillsRoute,
   UploadRoute: UploadRoute,
+  ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
