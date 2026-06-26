@@ -1,47 +1,125 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Upload, FileText, CheckCircle2, ArrowRight } from "lucide-react";
+import { FileText, CheckCircle2, ArrowRight, Loader2 } from "lucide-react";
+import { z } from "zod";
 import { PageShell } from "@/components/PageShell";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/upload")({
-  head: () => ({ meta: [{ title: "Upload Resume — CareerPilot AI" }] }),
+  head: () => ({ meta: [{ title: "Resume Upload — CareerPilot AI" }] }),
   component: UploadPage,
 });
 
+const resumeSchema = z.object({
+  target_role: z.string().trim().min(2, "Enter your target role").max(120, "Keep it under 120 characters"),
+  resume_text: z.string().trim().min(50, "Paste at least 50 characters of resume text").max(20000, "Resume text is too long (max 20,000 chars)"),
+});
+
 function UploadPage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [dragging, setDragging] = useState(false);
+  const navigate = useNavigate();
+  const [targetRole, setTargetRole] = useState("");
+  const [resumeText, setResumeText] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSuccess(false);
+
+    const parsed = resumeSchema.safeParse({ target_role: targetRole, resume_text: resumeText });
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Invalid input");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { data: userData, error: userErr } = await supabase.auth.getUser();
+      if (userErr || !userData.user) {
+        setError("You must be signed in to save your resume.");
+        setSubmitting(false);
+        return;
+      }
+
+      const { error: insertErr } = await supabase.from("resumes").insert({
+        user_id: userData.user.id,
+        target_role: parsed.data.target_role,
+        resume_text: parsed.data.resume_text,
+      });
+
+      if (insertErr) {
+        setError(insertErr.message);
+      } else {
+        setSuccess(true);
+        setTargetRole("");
+        setResumeText("");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
-    <PageShell eyebrow="Step 1 of 4" title="Upload your resume" description="Drop a PDF or DOCX. Our AI will extract experience, skills, and impact in seconds.">
+    <PageShell eyebrow="Step 1 of 4" title="Resume Upload" description="Tell us the role you're targeting and paste your resume text. We'll save it securely to your account.">
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <label
-            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={(e) => {
-              e.preventDefault(); setDragging(false);
-              const f = e.dataTransfer.files?.[0]; if (f) setFile(f);
-            }}
-            className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-16 text-center transition ${dragging ? "border-primary bg-primary/5" : "border-border bg-surface"}`}
-          >
-            <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary">
-              <Upload className="h-6 w-6" />
-            </div>
-            <h3 className="mt-4 text-lg font-semibold">{file ? file.name : "Drop your resume here"}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">{file ? `${(file.size / 1024).toFixed(1)} KB · ready to analyze` : "PDF or DOCX, up to 10MB"}</p>
-            {!file && (
-              <span className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground">Choose file</span>
-            )}
-          </label>
+        <form onSubmit={handleSubmit} className="lg:col-span-2 card-surface p-6 space-y-5">
+          <div>
+            <label htmlFor="target_role" className="block text-sm font-medium mb-2">Target Career Role</label>
+            <input
+              id="target_role"
+              type="text"
+              value={targetRole}
+              onChange={(e) => setTargetRole(e.target.value)}
+              placeholder="e.g. Senior Frontend Engineer"
+              maxLength={120}
+              className="w-full rounded-lg border border-border bg-background/40 px-4 py-3 text-sm outline-none focus:border-primary"
+            />
+          </div>
 
-          {file && (
-            <Link to="/skills" className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90">
-              Analyze skills <ArrowRight className="h-4 w-4" />
-            </Link>
+          <div>
+            <label htmlFor="resume_text" className="block text-sm font-medium mb-2">Resume Text</label>
+            <textarea
+              id="resume_text"
+              value={resumeText}
+              onChange={(e) => setResumeText(e.target.value)}
+              placeholder="Paste your full resume here…"
+              rows={14}
+              maxLength={20000}
+              className="w-full rounded-lg border border-border bg-background/40 px-4 py-3 text-sm outline-none focus:border-primary resize-y"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">{resumeText.length.toLocaleString()} / 20,000 characters</p>
+          </div>
+
+          {error && (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
           )}
-        </div>
+          {success && (
+            <div className="rounded-lg border border-primary/40 bg-primary/10 p-3 text-sm flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-primary" /> Resume saved.
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+            >
+              {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : <>Save resume <ArrowRight className="h-4 w-4" /></>}
+            </button>
+            {success && (
+              <button
+                type="button"
+                onClick={() => navigate({ to: "/skills" })}
+                className="inline-flex items-center gap-2 rounded-lg border border-border px-6 py-3 text-sm font-semibold hover:bg-surface"
+              >
+                Analyze skills <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </form>
 
         <aside className="card-surface p-6">
           <h3 className="font-semibold">What we look for</h3>
@@ -60,7 +138,7 @@ function UploadPage() {
           </ul>
           <div className="mt-6 rounded-lg border border-border bg-background/40 p-4 text-xs text-muted-foreground">
             <FileText className="mb-2 h-4 w-4 text-primary" />
-            Your resume stays private. We never share it with employers or third parties.
+            Your resume stays private. Row-level security ensures only you can read your saved resumes.
           </div>
         </aside>
       </div>
