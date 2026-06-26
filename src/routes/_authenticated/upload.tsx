@@ -51,12 +51,14 @@ function UploadPage() {
 
       if (insertErr) {
         setError(insertErr.message);
-      } else {
-        setSuccess(true);
-        setTargetRole("");
-        setResumeText("");
+        setSubmitting(false);
+        return;
       }
-    } finally {
+
+      setSuccess(true);
+      navigate({ to: "/skills" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
       setSubmitting(false);
     }
   }
