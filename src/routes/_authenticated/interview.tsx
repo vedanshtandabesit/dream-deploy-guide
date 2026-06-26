@@ -3,7 +3,7 @@ import { useState } from "react";
 import { MessagesSquare, ChevronDown, Sparkles } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 
-export const Route = createFileRoute("/interview")({
+export const Route = createFileRoute("/_authenticated/interview")({
   head: () => ({ meta: [{ title: "Interview Questions — CareerPilot AI" }] }),
   component: Interview,
 });

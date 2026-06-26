@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { TrendingUp, Target, BookOpen, Award, ArrowUpRight } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — CareerPilot AI" }] }),
   component: Dashboard,
 });
