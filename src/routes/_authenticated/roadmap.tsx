@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckCircle2, Circle, Clock, ArrowRight } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 
-export const Route = createFileRoute("/roadmap")({
+export const Route = createFileRoute("/_authenticated/roadmap")({
   head: () => ({ meta: [{ title: "Roadmap — CareerPilot AI" }] }),
   component: Roadmap,
 });

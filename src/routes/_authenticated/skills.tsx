@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, TrendingUp, AlertCircle } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 
-export const Route = createFileRoute("/skills")({
+export const Route = createFileRoute("/_authenticated/skills")({
   head: () => ({ meta: [{ title: "Skill Analysis — CareerPilot AI" }] }),
   component: Skills,
 });

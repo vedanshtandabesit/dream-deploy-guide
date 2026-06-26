@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Send, Sparkles, Bot, User } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 
-export const Route = createFileRoute("/assistant")({
+export const Route = createFileRoute("/_authenticated/assistant")({
   head: () => ({ meta: [{ title: "AI Assistant — CareerPilot AI" }] }),
   component: Assistant,
 });

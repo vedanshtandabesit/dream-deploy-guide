@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Upload, FileText, CheckCircle2, ArrowRight } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 
-export const Route = createFileRoute("/upload")({
+export const Route = createFileRoute("/_authenticated/upload")({
   head: () => ({ meta: [{ title: "Upload Resume — CareerPilot AI" }] }),
   component: UploadPage,
 });
