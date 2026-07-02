@@ -55,6 +55,16 @@ function UploadPage() {
         return;
       }
 
+      // Stash payload so /skills can call the analyze-resume edge function.
+      try {
+        sessionStorage.setItem(
+          "careerpilot_pending_analysis",
+          JSON.stringify({ resumeText: parsed.data.resume_text, targetRole: parsed.data.target_role }),
+        );
+      } catch {
+        // sessionStorage unavailable — /skills will fall back to defaults.
+      }
+
       setSuccess(true);
       navigate({ to: "/skills" });
     } catch (err) {
