@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Analyze a resume against a target role using Lovable AI Gateway.
 // Returns { currentSkills, missingSkills, roadmap, matchScore }.
 
@@ -28,12 +29,26 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+=======
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const SARVAM_API_KEY = Deno.env.get('SARVAM_API_KEY');
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { 
+      headers: { 
+        'Access-Control-Allow-Origin': '*', 
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' 
+      } 
+>>>>>>> d08f7f6 (chore: prepare frontend for deployment)
     });
   }
 
   try {
     const { resumeText, targetRole } = await req.json();
 
+<<<<<<< HEAD
     if (typeof resumeText !== "string" || typeof targetRole !== "string" || resumeText.trim().length < 20 || targetRole.trim().length < 2) {
       return new Response(JSON.stringify({ error: "Invalid input: resumeText and targetRole required." }), {
         status: 400,
@@ -94,3 +109,36 @@ Deno.serve(async (req) => {
     });
   }
 });
+=======
+    const response = await fetch("https://api.sarvam.ai/chat/completions", {
+      method: "POST",
+      headers: {
+        "api-subscription-key": SARVAM_API_KEY || "", 
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "sarvam-30b",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert AI career mentor. Analyze the following resume text against the target role. Return ONLY a JSON object containing two keys: 'missing_skills' (an array of strings) and 'roadmap' (a 3-month step-by-step plan)."
+          },
+          {
+            role: "user",
+            content: `Target Role: ${targetRole}\nResume Text: ${resumeText}`
+          }
+        ],
+        max_tokens: 2048 
+      })
+    });
+
+    const aiData = await response.json();
+    
+    return new Response(JSON.stringify(aiData), {
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  }
+});
+>>>>>>> d08f7f6 (chore: prepare frontend for deployment)
