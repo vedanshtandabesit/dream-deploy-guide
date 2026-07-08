@@ -11,6 +11,7 @@ const links = [
   { to: "/skills", label: "Skills" },
   { to: "/roadmap", label: "Roadmap" },
   { to: "/interview", label: "Interview" },
+  { to: "/scheduler", label: "Scheduler" },
   { to: "/assistant", label: "AI Coach" },
 ] as const;
 
