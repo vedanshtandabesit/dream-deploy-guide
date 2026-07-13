@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Brain, FileText, Map, MessagesSquare, Sparkles, Target } from "lucide-react";
-
+import SmartSchedule from '../components/SmartSchedule
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -33,6 +33,7 @@ function Landing() {
             <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
               CareerPilot AI reads your resume, analyzes your skills, and builds a personalized roadmap — complete with interview prep — to land your next role.
             </p>
+            <SmartSchedule />
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link to="/upload" className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90">
                 Upload resume <ArrowRight className="h-4 w-4" />
